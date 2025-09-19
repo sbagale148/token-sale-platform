@@ -64,7 +64,7 @@ For verbose output to see detailed gas costs and events:
 npx hardhat test --verbose
 ```
 
-🚀 Deployment
+## 🚀 Deployment
 
 1. Local Development Network
 Deploy to a local Hardhat network for testing:
@@ -101,7 +101,7 @@ npx hardhat run scripts/deploy.js --network localhost
     ```bash
     npx hardhat run scripts/deploy.js --network sepolia
     ```
-📖 Usage
+## 📖 Usage
 
 After deployment, users can interact with the TokenSale contract:
 
@@ -109,10 +109,11 @@ After deployment, users can interact with the TokenSale contract:
     b. Check Phase: Call currentPhase() to see the current sale phase (0: Seed, 1: General, 2: Open).
     c. Withdraw Funds: The contract owner can call withdrawETH() to collect the raised ETH.
 
-🔐 Security
+## 🔐 Security
+
     a. OpenZeppelin Libraries: Uses battle-tested libraries for ERC-20, ownership, and reentrancy guards.
     b. Phase Caps: Prevents overselling in early, discounted phases.
     c. Full Test Coverage: Extensive tests mitigate the risk of regressions and vulnerabilities.
 
-📄 License
+## 📄 License
 This project is licensed under the MIT License.
