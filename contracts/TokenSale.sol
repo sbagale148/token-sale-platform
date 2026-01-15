@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -21,6 +21,7 @@ contract TokenSale is ReentrancyGuard, Ownable {
     event PhaseAdvanced(Phase newPhase);
 
     constructor(address _tokenAddress) {
+        require(_tokenAddress != address(0), "Token address cannot be zero");
         token = IERC20(_tokenAddress);
         
         // Initialize phase rates (tokens/ETH)
@@ -69,7 +70,9 @@ contract TokenSale is ReentrancyGuard, Ownable {
 
     function withdrawETH() external onlyOwner {
         uint256 balance = address(this).balance;
-        payable(owner()).transfer(balance);
+        require(balance > 0, "No ETH to withdraw");
+        (bool success, ) = payable(owner()).call{value: balance}("");
+        require(success, "ETH transfer failed");
     }
 
     function remainingTokens() external view returns (uint256) {
