@@ -9,14 +9,16 @@ describe("TokenSale", function () {
     
     const MyToken = await ethers.getContractFactory("MyToken");
     token = await MyToken.deploy(1000000); // 1M tokens
-    await token.deployed();
+    await token.waitForDeployment();
+    const tokenAddress = await token.getAddress();
 
     const TokenSale = await ethers.getContractFactory("TokenSale");
-    tokenSale = await TokenSale.deploy(token.address);
-    await tokenSale.deployed();
+    tokenSale = await TokenSale.deploy(tokenAddress);
+    await tokenSale.waitForDeployment();
+    const tokenSaleAddress = await tokenSale.getAddress();
 
     // Transfer tokens to sale contract
-    await token.transfer(tokenSale.address, ethers.utils.parseEther("500000"));
+    await token.transfer(tokenSaleAddress, ethers.parseEther("500000"));
   });
 
   it("Should deploy with correct initial state", async function () {
@@ -26,10 +28,10 @@ describe("TokenSale", function () {
 
   it("Should allow token purchases in seed phase", async function () {
     await tokenSale.connect(buyer1).buyTokens({
-      value: ethers.utils.parseEther("1.0")
+      value: ethers.parseEther("1.0")
     });
     
-    expect(await token.balanceOf(buyer1.address)).to.equal(ethers.utils.parseEther("1000"));
+    expect(await token.balanceOf(buyer1.address)).to.equal(ethers.parseEther("1000"));
   });
 
   it("Should advance to general phase", async function () {
@@ -39,7 +41,7 @@ describe("TokenSale", function () {
   });
 
   it("Should prevent purchase beyond phase cap", async function () {
-    const excessiveETH = ethers.utils.parseEther("1000");
+    const excessiveETH = ethers.parseEther("1000");
     
     await expect(
       tokenSale.connect(buyer1).buyTokens({value: excessiveETH})
@@ -50,22 +52,23 @@ describe("TokenSale", function () {
     // Testing nonReentrant modifier by attempting recursive call
     // This test would need a malicious contract to properly test
     // Here we just verify the modifier exists
+    const tokenSaleAddress = await tokenSale.getAddress();
     const buyFunction = tokenSale.interface.encodeFunctionData("buyTokens");
     await expect(
       buyer1.sendTransaction({
-        to: tokenSale.address,
+        to: tokenSaleAddress,
         data: buyFunction,
-        value: ethers.utils.parseEther("1.0")
+        value: ethers.parseEther("1.0")
       })
     ).to.not.be.reverted;
   });
 
   it("Should allow owner withdrawal", async function () {
     await tokenSale.connect(buyer1).buyTokens({
-      value: ethers.utils.parseEther("1.0")
+      value: ethers.parseEther("1.0")
     });
     
     await expect(tokenSale.withdrawETH())
-      .to.changeEtherBalance(owner, ethers.utils.parseEther("1.0"));
+      .to.changeEtherBalance(owner, ethers.parseEther("1.0"));
   });
 });
